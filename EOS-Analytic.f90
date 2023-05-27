@@ -1,3 +1,6 @@
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Generating EOS table for analytically fitted neutron star EOS
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 SUBROUTINE ANALYTIC_TABLE
 USE DEFINITION, only : density, pressure, eoslineno2
 IMPLICIT NONE
@@ -70,8 +73,9 @@ contains
 
 END SUBROUTINE
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Using analytically fitted neutron star EOS to convert density to pressure
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 SUBROUTINE ANALYTIC_RTOP (ini_p, ini_rho)
 USE DEFINITION, only : density, pressure
 IMPLICIT NONE

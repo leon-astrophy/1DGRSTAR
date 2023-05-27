@@ -1,3 +1,6 @@
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! This subroutine reads neturon star EOS table extracted form CompOSE
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 SUBROUTINE READEOSTABLE
 USE DEFINITION
 IMPLICIT NONE
@@ -37,8 +40,23 @@ ENDDO
 
 END SUBROUTINE
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! This subroutine destroy arrays alllocated for storing neutron star EOS table 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+SUBROUTINE DESTROYNS
+USE DEFINITION
+IMPLICIT NONE
 
+! Deallocate arrays !
+DEALLOCATE(nbtable)
+DEALLOCATE(epstable)
+DEALLOCATE(ptable)
+
+END SUBROUTINE
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! This subroutine convert density to pressure by using neutron star EOS tables
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 SUBROUTINE NSRtoP(rho_in, p_out)
 USE DEFINITION
 IMPLICIT NONE
@@ -95,8 +113,9 @@ p_out = (p_out*mev2erg*cm3tofm3)*(pressure)
 
 END SUBROUTINE
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! This subroutine convert density to internal energy by using neutron star EOS tables
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 SUBROUTINE NSRtoE(rho_in, eps_out)
 USE DEFINITION
 IMPLICIT NONE
@@ -153,8 +172,9 @@ eps_out = (rhotarget*(eps_out*mev2erg/mnu))*(pressure)
 
 END SUBROUTINE
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! This subroutine convert pressure to density by using neutron star EOS tables
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 SUBROUTINE NSPtoR(p_in, rho_out)
 USE DEFINITION
 IMPLICIT NONE
@@ -211,8 +231,9 @@ rho_out = (rho_out*mnu*cm3tofm3)*(density)
 
 END SUBROUTINE
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! This subroutine convert pressure to density by using neutron star EOS tables
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 SUBROUTINE NSPtoE(p_in, rho_in, eps_out)
 USE DEFINITION
 IMPLICIT NONE
@@ -270,21 +291,8 @@ eps_out = ((rho_in/density)*(eps_out*mev2erg/mnu))*(pressure)
 END SUBROUTINE
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-SUBROUTINE DESTROYNS
-USE DEFINITION
-IMPLICIT NONE
-
-! Deallocate arrays !
-DEALLOCATE(nbtable)
-DEALLOCATE(epstable)
-DEALLOCATE(ptable)
-
-END SUBROUTINE
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! This subroutine do 2-point interpolation for a given point of existing !
-!datum and output the quantity that the user wished to interpolate 	 !
+! This subroutine do 2-point interpolation for a given point of existing 
+!datum and output the quantity that the user wished to interpolate 	 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 SUBROUTINE LINEAR(x0, x1, y0, y1, x_in, y_out)
 USE DEFINITION, ONLY : DP
@@ -319,7 +327,7 @@ y_out = l0*y0 + l1*y1
 END SUBROUTINE
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! Akima spline interpolation. See Hiroshi Akima 1970 !
+! Akima spline interpolation. See Hiroshi Akima 1970 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 SUBROUTINE AKIMA(xm2, xm1, x0, xp1, xp2, xp3, ym2, ym1, y0, yp1, yp2, yp3, x_in, y_out)
 USE DEFINITION, ONLY : DP

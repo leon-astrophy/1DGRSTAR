@@ -23,15 +23,10 @@ REAL (DP) :: ini_p2, ini_rho2, ini_rhoe2
 REAL (DP), DIMENSION (1 : no_of_eq_ini) :: y_zero, y_one, y_two, y_three, y_four, y_five
 REAL (DP), DIMENSION (1 : no_of_eq_ini) :: der_one, der_two, der_three, der_four, der_five, der_new
 
-! Assigning the variables essential in the RK-5 method !
-REAL (DP), ALLOCATABLE, DIMENSION (:,:) :: y		
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-! Allocate !
-ALLOCATE(y(1 : no_of_eq_ini, -4 : length_step + 5))
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Clear array !
+y_rk4 = 0.0d0
 
 ! Atmospheric density !
 rho2_a = rho2_c*rhofac
@@ -57,21 +52,21 @@ END IF
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 ! We assign the value of y at center !
-y (1, 0) = 0.0E0_DP
-y (2, 0) = p2_c
-y (3, 0) = rho2_c + rhoe2_c
+y_rk4 (1, 0) = 0.0E0_DP
+y_rk4 (2, 0) = p2_c
+y_rk4 (3, 0) = rho2_c + rhoe2_c
 
 ! this is the main structure of RK-5 method !
 DO j = 0, length_step - 1
 
 	! Update the value of x and y !
 	DO i = 1, no_of_eq_ini
-		y_zero (i) = y (i, j)
+		y_zero (i) = y_rk4 (i, j)
 	END DO
 
 	! Update distance !
 	x = DBLE (j) * dx
-
+	
 	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	! This is the first step in RK-5 !
 	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -95,7 +90,7 @@ DO j = 0, length_step - 1
 		end = j
 		EXIT
 	END IF
-
+	
 	! Convert !
 	IF(ns_flag == 1) THEN
 		CALL NSPToR(ini_p2, ini_rho2)
@@ -130,7 +125,6 @@ DO j = 0, length_step - 1
 		EXIT
 	END IF
 
-	! Convert !
 	IF(ns_flag == 1) THEN
 		CALL NSPToR(ini_p2, ini_rho2)
 		CALL NSPToE(ini_p2, ini_rho2, ini_rhoe2)
@@ -163,7 +157,6 @@ DO j = 0, length_step - 1
 		EXIT
 	END IF
 
-	! Convert !
 	IF(ns_flag == 1) THEN
 		CALL NSPToR(ini_p2, ini_rho2)
 		CALL NSPToE(ini_p2, ini_rho2, ini_rhoe2)
@@ -196,7 +189,6 @@ DO j = 0, length_step - 1
 		EXIT
 	END IF
 
-	! Convert !
 	IF(ns_flag == 1) THEN
 		CALL NSPToR(ini_p2, ini_rho2)
 		CALL NSPToE(ini_p2, ini_rho2, ini_rhoe2)
@@ -232,7 +224,6 @@ DO j = 0, length_step - 1
 		EXIT
 	END IF
 
-	! Convert !
 	IF(ns_flag == 1) THEN
 		CALL NSPToR(ini_p2, ini_rho2)
 		CALL NSPToE(ini_p2, ini_rho2, ini_rhoe2)
@@ -254,19 +245,18 @@ DO j = 0, length_step - 1
 	CALL INI_DER_1F (der_new, x, y_five, no_of_eq_ini)
 
 	DO i = 1, no_of_eq_ini
-		y (i, j + 1) = y_zero (i) + (7.0E0_DP * der_one (i) + 3.2E1_DP * der_three (i) & 
+		y_rk4 (i, j + 1) = y_zero (i) + (7.0E0_DP * der_one (i) + 3.2E1_DP * der_three (i) & 
 				+ 1.2E1_DP * der_four (i) + 3.2E1_DP * der_five (i) & 
 				+ 7.0E0_DP * der_new (i)) * dx / 9.0E1_DP
 	END DO
 
-	ini_p2 = y (2, j + 1)
+	ini_p2 = y_rk4 (2, j + 1)
 
 	IF (ini_p2 <= p2_a) THEN
 		end = j
 		EXIT
 	END IF
 	
-	! Convert !
 	IF(ns_flag == 1) THEN
 		CALL NSPToR(ini_p2, ini_rho2)
 		CALL NSPToE(ini_p2, ini_rho2, ini_rhoe2)
@@ -278,21 +268,14 @@ DO j = 0, length_step - 1
 		CALL EOSINTERNAL (ini_rho2, ini_p2, ini_rhoe2, 2)
 	END IF
 
-	y (3, j + 1) = ini_rho2 + ini_rhoe2
+	y_rk4 (3, j + 1) = ini_rho2 + ini_rhoe2
 
 END DO
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 ! Print results !
-WRITE (101,701) log10(rho2_c/density), y (1, end), DBLE (end)*dx/length/rsolar
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-! Deallocate !
-DEALLOCATE(y)
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+WRITE (101,701) log10(rho2_c/density), y_rk4 (1, end), DBLE (end)*dx/length/rsolar
 
 ! Format !
 701 FORMAT (10ES33.15)
@@ -325,15 +308,10 @@ REAL (DP) :: ini_p2, ini_rho2, ini_rhoe2
 REAL (DP), DIMENSION (1 : no_of_eq_ini) :: y_zero, y_one, y_two, y_three, y_four, y_five
 REAL (DP), DIMENSION (1 : no_of_eq_ini) :: der_one, der_two, der_three, der_four, der_five, der_new
 
-! Assigning the variables essential in the RK-5 method !
-REAL (DP), ALLOCATABLE, DIMENSION (:,:) :: y		
-
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-! Allocate !
-ALLOCATE(y(1 : no_of_eq_ini, -4 : length_step + 5))
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Clear array !
+y_rk4 = 0.0d0
 
 ! Atmospheric density !
 rho1_a = rho1_c*rhofac
@@ -368,12 +346,12 @@ END IF
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 ! We assign the value of y at center !
-y (1, 0) = 0.0E0_DP
-y (2, 0) = p1_c
-y (3, 0) = rho1_c + rhoe1_c
-y (4, 0) = 0.0E0_DP
-y (5, 0) = p2_c
-y (6, 0) = rho2_c + rhoe2_c
+y_rk4 (1, 0) = 0.0E0_DP
+y_rk4 (2, 0) = p1_c
+y_rk4 (3, 0) = rho1_c + rhoe1_c
+y_rk4 (4, 0) = 0.0E0_DP
+y_rk4 (5, 0) = p2_c
+y_rk4 (6, 0) = rho2_c + rhoe2_c
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -391,7 +369,7 @@ DO j = 0, length_step - 1
 	
 	! Update the value of x and y !
 	DO i = 1, no_of_eq_ini
-		y_zero (i) = y (i, j)
+		y_zero (i) = y_rk4 (i, j)
 	END DO
 
 	x = DBLE (j) * dx
@@ -699,7 +677,7 @@ DO j = 0, length_step - 1
 			- (1.2E1_DP / 7.0E0_DP) * dx * der_four (i) &
 			+ (8.0E0_DP / 7.0E0_DP) * dx * der_five (i)
 	END DO
-WRITE (*,*) y_five (5), p2_a, j, atm_2
+
 	IF (j < atm_1) THEN
 		ini_p1 = y_five (2)
 		IF (ini_p1 <= p1_a) THEN
@@ -708,11 +686,10 @@ WRITE (*,*) y_five (5), p2_a, j, atm_2
 			y_five (2) = p1_a
 		END IF
 	ELSE
-		WRITE (*,*) 
 		ini_p1 = p1_a
 		y_five (2) = p1_a
 	END IF
-WRITE (*,*) y_five (5), p2_a, j, atm_2
+
 	IF (j < atm_2) THEN
 		ini_p2 = y_five (5)
 		IF (ini_p2 <= p2_a) THEN
@@ -766,32 +743,32 @@ WRITE (*,*) y_five (5), p2_a, j, atm_2
 	END IF
 
 	DO i = 1, no_of_eq_ini
-		y (i, j + 1) = y_zero (i) + (7.0E0_DP * der_one (i) + 3.2E1_DP * der_three (i) & 
+		y_rk4 (i, j + 1) = y_zero (i) + (7.0E0_DP * der_one (i) + 3.2E1_DP * der_three (i) & 
 				+ 1.2E1_DP * der_four (i) + 3.2E1_DP * der_five (i) & 
 				+ 7.0E0_DP * der_new (i)) * dx / 9.0E1_DP
 	END DO
 
 	IF (j < atm_1) THEN
-		ini_p1 = y (2, j + 1)
+		ini_p1 = y_rk4 (2, j + 1)
 		IF (ini_p1 <= p1_a) THEN
 			atm_1 = j
 			ini_p1 = p1_a
-			y (2, j + 1) = p1_a
+			y_rk4 (2, j + 1) = p1_a
 		END IF
 	ELSE
 		ini_p1 = p1_a
-		y (2, j + 1) = p1_a
+		y_rk4 (2, j + 1) = p1_a
 	END IF
 	IF (j < atm_2) THEN
-		ini_p2 = y (5, j + 1)
+		ini_p2 = y_rk4 (5, j + 1)
 		IF (ini_p2 <= p2_a) THEN
 			atm_2 = j
 			ini_p2 = p2_a
-			y (5, j + 1) = p2_a
+			y_rk4 (5, j + 1) = p2_a
 		END IF
 	ELSE
 		ini_p2 = p2_a
-		y (5, j + 1) = p2_a
+		y_rk4 (5, j + 1) = p2_a
 	END IF
 
 	CALL GETRHO_EOSPTOR (ini_rho1, ini_p1, eosline1, 1)
@@ -808,33 +785,29 @@ WRITE (*,*) y_five (5), p2_a, j, atm_2
 	END IF
 	
 	If (ini_p1 == p1_a) THEN
-		y (3, j + 1) = rho1_a + rhoe1_a
+		y_rk4 (3, j + 1) = rho1_a + rhoe1_a
 	ELSE
-		y (3, j + 1) = ini_rho1 + ini_rhoe1
+		y_rk4 (3, j + 1) = ini_rho1 + ini_rhoe1
 	END IF
 	If (ini_p2 == p2_a) THEN
-		y (6, j + 1) = rho2_a + rhoe2_a
+		y_rk4 (6, j + 1) = rho2_a + rhoe2_a
 	ELSE
-		y (6, j + 1) = ini_rho2 + ini_rhoe2
+		y_rk4 (6, j + 1) = ini_rho2 + ini_rhoe2
 	END IF
 
 END DO	
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+! Look for the maxmimum radius between DM and NM !
 end = INT(MAX(DBLE(atm_1), DBLE(atm_2)))
 
 ! Assign results !
-mass1 = y (1, end)
-mass2 = y (4, end)
+mass1 = y_rk4 (1, end)
+mass2 = y_rk4 (4, end)
 rad1 = DBLE (atm_1)*dx/length/rsolar
 rad2 = DBLE (atm_2)*dx/length/rsolar
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-! Deallocate !
-DEALLOCATE(y)
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 END SUBROUTINE

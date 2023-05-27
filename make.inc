@@ -1,4 +1,9 @@
-F90=pgfortran
-F90FLAGS= -fastsse -fast -Mipa=fast,inline -Msmartalloc -Mfprelaxed -Mstack_arrays -O4 -Mvect=prefetch -Mprefetch -mcmodel=medium -Minfo
+# look for gfortran compiler #
+F90=gfortran
+
+# fortran flags #
+F90FLAGS= -ffree-line-length-512 -Ofast -O4 
+LDFLAGS= -ffree-line-length-512 -Ofast -O4 
+
+# other flags #
 MODINC="-I ./"
-LDFLAGS= -fastsse -fast -Mipa=fast,inline -Msmartalloc -Mfprelaxed -Mstack_arrays -O4 -Mvect=prefetch -Mprefetch -mcmodel=medium -Minfo
